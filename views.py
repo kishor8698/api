@@ -5,49 +5,38 @@ from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse,JsonResponse
 import io
 from rest_framework.parsers import JSONParser
-from django.views.decorators.csrf import csrf_exempt
+# from django.views.decorators.csrf import csrf_exempt # for function based view
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import exceptions, status
+import json
+# from django.utils.decorators import method_decorator 
+from django.utils.decorators import method_decorator#for class based view
+from django.views import View # for class based view
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view #for function based view
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import ListModelMixin,CreateModelMixin,RetrieveModelMixin,UpdateModelMixin,DestroyModelMixin
 
-def student_detail(request,pk):
-    # stu=Student.objects.all()
-    # serializer=StudentSerializer(stu,many=True)
-    stu=Student.objects.get(id=pk)
-    # print(stu)
-    serializer=StudentSerializer(stu)
-    # print(serializer)
-    json_data=JSONRenderer().render(serializer.data)
-    # print(json_data)
-    # return JsonResponse(serializer.data,safe=False)
-    return HttpResponse(json_data,content_type="application/json")
-
-def student_list(request):
-    try:
-        stu=Student.objects.all()
-        serializer=StudentSerializer(stu,many=True)
-        # json_data=JSONRenderer().render(serializer.data)
-        # return HttpResponse(json_data,content_type="application/json")
-        return JsonResponse(serializer.data,status=status.HTTP_200_OK,safe=False)
-    except:
-        print("LL")
-        data = {}
-        data['status'] = status.HTTP_400_BAD_REQUEST
-        data['error'] = "something went wrong"
-        return JsonResponse(data,status=status.HTTP_400_BAD_REQUEST)
-
-@csrf_exempt
-def student_create(request):
-    if request.method == "POST":
-        print(request.body)
-        json_data=request.body
-        stream=io.BytesIO(json_data) 
-        pythondata=JSONParser().parse(stream)
-        serializer=StudentSerializer(data=pythondata)
-        if serializer.is_valid():
-            serializer.save()
-            # res={'msg':'Data Created'}
-            # json_data=JSONRenderer().render(res)
-            return HttpResponse(serializer.data,content_type="application/json")
-        json_data=JSONRenderer().render(serializer.errors)
-        return HttpResponse(json_data,content_type="application/json")
+class ListCreateStudent(ListModelMixin,CreateModelMixin,GenericAPIView):
+    queryset=Student.objects.all()
+    serializer_class=StudentSerializer
     
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+    
+class RetrieveUPdateDestroyStudent(RetrieveModelMixin,UpdateModelMixin,DestroyModelMixin,GenericAPIView):
+    queryset=Student.objects.all()
+    serializer_class=StudentSerializer
+    
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+    
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
