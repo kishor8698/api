@@ -7,4 +7,6 @@ urlpatterns = [
     path("stuinfo/<int:pk>",views.student_detail),
     path("stuinfo/",views.student_list),
     path("stucreate/",views.student_create),
+    #path("studentapi/",views.ListCreateStudent.as_view()),
+    #path("studentapi/<int:pk>",views.RetrieveUPdateDestroyStudent.as_view()),
 ]
